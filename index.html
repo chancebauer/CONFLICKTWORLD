@@ -3,37 +3,116 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CONFLICKT</title>
+  <title>CONFLICKTWORLD</title>
   <meta name="description" content="A super simple homepage that shows one stacked photo." />
   <style>
-    :root { color-scheme: light dark; }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background: #0a0a0a;
-      color: #fafafa;
-      display: grid;
-      place-items: center;
+    :root {
+      color-scheme: light dark;
+      --bg: #0a0a0a;
+      --text: #fafafa;
+      --caption: #cfcfcf;
+      --max-width: 90vw;
+      --max-height: 85vh;
     }
 
-  
-    .photo::before { transform: translate(10px, 10px) rotate(2.2deg); opacity: .9; }
-    .photo::after  { transform: translate(-12px, -10px) rotate(-2.6deg); opacity: .85; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    /* optional tiny caption */
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    main {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .frame {
+      position: relative;
+      display: inline-block;
+      max-width: var(--max-width);
+      max-height: var(--max-height);
+    }
+
+    .photo {
+      position: relative;
+      display: inline-block;
+    }
+
+    .photo img {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      max-width: 800px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      object-fit: contain;
+      display: block;
+    }
+
+    .photo::before,
+    .photo::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      z-index: -1;
+      transition: transform 0.6s ease;
+    }
+
+    .photo::before {
+      transform: translate(10px, 10px) rotate(2.2deg);
+      opacity: .9;
+    }
+
+    .photo::after {
+      transform: translate(-12px, -10px) rotate(-2.6deg);
+      opacity: .85;
+    }
+
+    /* Caption */
     .cap {
       margin-top: 14px;
-      text-align: center;
-      font-size: 13px;
-      color: #cfcfcf;
-      letter-spacing: .2px;
+      font-size: 0.9rem;
+      color: var(--caption);
+      letter-spacing: .3px;
     }
 
-    /* reduce motion: no rotation */
+    /* Accessibility: reduce motion */
     @media (prefers-reduced-motion: reduce) {
       .photo, .photo::before, .photo::after { transform: none; }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .photo img {
+        max-width: 90vw;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .photo img {
+        max-width: 95vw;
+        border-radius: 10px;
+      }
+      .cap {
+        font-size: 0.8rem;
+      }
     }
   </style>
 </head>
@@ -41,7 +120,6 @@
   <main>
     <div class="frame">
       <figure class="photo">
-        <!-- Replace the src with your image URL or file name -->
         <img src="images/img1.jpg" alt="Describe the scene for accessibility." loading="eager" decoding="async">
       </figure>
     </div>
