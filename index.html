@@ -40,6 +40,12 @@
       align-items: center;
       justify-content: center;
       padding: 1rem;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    body.entered main {
+      opacity: 1;
     }
 
     .frame {
@@ -64,28 +70,8 @@
       display: block;
     }
 
-    .photo::before,
-    .photo::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.05);
-      z-index: -1;
-      transition: transform 0.6s ease;
-    }
+    /* Removed accent borders (previously ::before and ::after) */
 
-    .photo::before {
-      transform: translate(10px, 10px) rotate(2.2deg);
-      opacity: .9;
-    }
-
-    .photo::after {
-      transform: translate(-12px, -10px) rotate(-2.6deg);
-      opacity: .85;
-    }
-
-    /* Caption */
     .cap {
       margin-top: 14px;
       font-size: 0.9rem;
@@ -93,12 +79,41 @@
       letter-spacing: .3px;
     }
 
-    /* Accessibility: reduce motion */
-    @media (prefers-reduced-motion: reduce) {
-      .photo, .photo::before, .photo::after { transform: none; }
+    /* Enter screen */
+    #enter-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      transition: opacity 0.8s ease;
+      cursor: pointer;
     }
 
-    /* Responsive adjustments */
+    #enter-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #enter-text {
+      font-size: 2rem;
+      letter-spacing: 3px;
+      animation: float 2s ease-in-out infinite alternate;
+      color: var(--text);
+    }
+
+    @keyframes float {
+      from { transform: translateY(-6px); }
+      to { transform: translateY(6px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .photo { transform: none; }
+      #enter-text { animation: none; }
+    }
+
     @media (max-width: 768px) {
       .photo img {
         max-width: 90vw;
@@ -117,6 +132,11 @@
   </style>
 </head>
 <body>
+  <!-- Simple Enter screen -->
+  <div id="enter-screen">
+    <div id="enter-text">Enter</div>
+  </div>
+
   <main>
     <div class="frame">
       <figure class="photo">
@@ -125,8 +145,22 @@
     </div>
     <div class="cap">© <span id="y"></span> CONFLICKTWORLD</div>
   </main>
+
   <script>
     document.getElementById('y').textContent = new Date().getFullYear();
+
+    const enterScreen = document.getElementById('enter-screen');
+
+    function enterSite() {
+      enterScreen.classList.add('hidden');
+      document.body.classList.add('entered');
+      setTimeout(() => enterScreen.remove(), 900);
+    }
+
+    enterScreen.addEventListener('click', enterSite);
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') enterSite();
+    });
   </script>
 </body>
 </html>
