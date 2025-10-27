@@ -4,92 +4,30 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CONFLICKTWORLD</title>
-  <meta name="description" content="Enter screen with cursor trail and fullscreen image grid." />
+  <meta name="description" content="One centered image per viewport with enter screen." />
   <style>
     :root {
       color-scheme: light dark;
       --bg: #0a0a0a;
       --text: #fafafa;
       --caption: #cfcfcf;
-      --cols: 3;
-      --rows: 2;
-      --gap: 8px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
       height: 100%;
-      width: 100%;
       background: var(--bg);
       color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      overflow: hidden; /* locked until enter */
+      overflow: hidden;           /* locked until enter */
+      scroll-behavior: smooth;
       cursor: default;
     }
 
     body.entered { overflow-y: auto; }
 
-    /* === FULLSCREEN GRID === */
-    main {
-      height: 100vh;
-      width: 100vw;
-      display: grid;
-      grid-template-columns: repeat(var(--cols), 1fr);
-      grid-template-rows: repeat(var(--rows), 1fr);
-      gap: var(--gap);
-      opacity: 0;
-      transition: opacity 0.8s ease;
-    }
-    body.entered main { opacity: 1; }
-
-    .tile {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: var(--bg);
-    }
-
-    .tile img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      background: var(--bg);
-    }
-
-    /* === OPTIONAL EXTRA IMAGE BELOW === */
-    .below {
-      width: 100%;
-      padding: 16px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: var(--bg);
-      border-top: 1px solid rgba(255,255,255,0.08);
-    }
-    .below img {
-      width: min(1200px, 96vw);
-      height: auto;
-      display: block;
-      object-fit: contain;
-      background: var(--bg);
-    }
-
-    /* === FOOTER (now scrolls with page) === */
-    footer {
-      text-align: center;
-      color: var(--caption);
-      font-size: clamp(0.85rem, 2vw, 1rem);
-      letter-spacing: 0.3px;
-      opacity: 0.85;
-      padding: 20px 10px 40px;
-      background: var(--bg);
-    }
-
-    /* === ENTER SCREEN === */
+    /* === ENTER SCREEN (original) === */
     #enter-screen {
       position: fixed;
       inset: 0;
@@ -114,19 +52,48 @@
       filter: drop-shadow(0 0 0px white) drop-shadow(0 0 0px rgba(255,255,255,0.5));
     }
 
-    /* === Zoom-blur effect === */
+    /* Zoom-blur effect */
     #enter-logo.zoom-blur {
       animation: zoomBlur 0.8s cubic-bezier(.2,.7,.2,1) forwards;
       will-change: transform, filter, opacity;
     }
-
     @keyframes zoomBlur {
       0%   { transform: scale(1); filter: blur(0px); opacity: 1; }
       100% { transform: scale(12); filter: blur(30px); opacity: 0; }
     }
-
     @media (prefers-reduced-motion: reduce) {
       #enter-logo.zoom-blur { animation: none; }
+    }
+
+    /* === ONE IMAGE PER VIEWPORT === */
+    section {
+      height: 100vh;              /* one full screen per image */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      padding: 16px;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    body.entered section { opacity: 1; }
+
+    img {
+      width: min(1200px, 90vw);   /* responsive and centered */
+      height: auto;
+      max-height: 90vh;
+      object-fit: contain;
+      display: block;
+      background: var(--bg);
+    }
+
+    footer {
+      text-align: center;
+      color: var(--caption);
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      letter-spacing: 0.3px;
+      opacity: 0.85;
+      padding: 40px 10px;
     }
   </style>
 </head>
@@ -136,31 +103,17 @@
     <img id="enter-logo" src="images/enterimg.gif" alt="Enter Logo">
   </div>
 
-  <!-- === MAIN GRID === -->
-  <main id="grid">
-    <div class="tile"><img src="images/img1.jpg" alt="Image 1"></div>
-    <div class="tile"><img src="images/img1.jpg" alt="Image 2"></div>
-    <div class="tile"><img src="images/img1.jpg" alt="Image 3"></div>
-    <div class="tile"><img src="images/img1.jpg" alt="Image 4"></div>
-  </main>
+  <!-- === ONE IMAGE PER SCROLL === -->
+  <section><img src="images/img1.jpg" alt="Image 1"></section>
+  <section><img src="images/img2.jpg" alt="Image 2"></section>
+  <section><img src="images/jjj.jpg" alt="Image 3"></section>
 
-  <!-- === EXTRA IMAGE BELOW === -->
-  <div class="below">
-    <img src="images/img2.jpg" alt="Extra JPG Below the Grid">
-    
-  </div>
-  <div class="below">
-    <img src="images\jjj.jpg" alt="Extra JPG Below the Grid">
-  </div>
-  <!-- === FOOTER (scrolls naturally) === -->
-  <footer>
-    © 2025 CONFLICKTWORLD
-  </footer>
+
+  <footer>© 2025 CONFLICKTWORLD</footer>
 
   <script>
     const enterScreen = document.getElementById('enter-screen');
     const logo = document.getElementById('enter-logo');
-    const grid = document.getElementById('grid');
 
     function startZoomBlurThenEnter() {
       if (enterScreen.classList.contains('animating')) return;
@@ -171,56 +124,16 @@
 
     function finishEnter() {
       enterScreen.classList.add('hidden');
-      document.body.classList.add('entered'); // unlock scroll
-      setTimeout(() => enterScreen.remove(), 700);
-      smartAutoLayout();
+      document.body.classList.add('entered');      // unlock scroll + reveal sections
+      setTimeout(() => enterScreen.remove(), 700); // clean up overlay
     }
 
+    // Interactions: click overlay or logo, press Enter/Space
     logo.addEventListener('click', e => { e.stopPropagation(); startZoomBlurThenEnter(); });
     enterScreen.addEventListener('click', startZoomBlurThenEnter);
     window.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startZoomBlurThenEnter(); }
     });
-
-    function pickBestGrid(n, viewportRatio, imageRatio) {
-      let best = { cols: 1, rows: n, score: Infinity };
-      for (let cols = 1; cols <= n; cols++) {
-        const rows = Math.ceil(n / cols);
-        const gridRatio = (cols / rows) * imageRatio;
-        const diff = Math.abs(viewportRatio - gridRatio);
-        const empty = cols * rows - n;
-        const score = diff + empty * 0.01;
-        if (score < best.score) best = { cols, rows, score };
-      }
-      return best;
-    }
-
-    async function getFirstImageAspect() {
-      const firstImg = grid.querySelector('img');
-      if (!firstImg) return 1;
-      if (!firstImg.complete || firstImg.naturalWidth === 0) {
-        await new Promise(res => {
-          firstImg.addEventListener('load', res, { once: true });
-          firstImg.addEventListener('error', res, { once: true });
-        });
-      }
-      return (firstImg.naturalWidth || 1) / (firstImg.naturalHeight || 1);
-    }
-
-    async function smartAutoLayout() {
-      const imgs = grid.children.length;
-      if (!imgs) return;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const viewportRatio = vw / vh;
-      const imageRatio = await getFirstImageAspect();
-      const { cols, rows } = pickBestGrid(imgs, viewportRatio, imageRatio);
-      document.documentElement.style.setProperty('--cols', cols);
-      document.documentElement.style.setProperty('--rows', rows);
-    }
-
-    window.addEventListener('resize', smartAutoLayout);
-    window.addEventListener('load', smartAutoLayout);
   </script>
 </body>
 </html>
