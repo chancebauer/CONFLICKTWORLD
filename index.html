@@ -4,82 +4,75 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CONFLICKTWORLD</title>
-  <meta name="description" content="A super simple homepage that shows one stacked photo." />
+  <meta name="description" content="Enter screen with cursor trail and fullscreen image grid." />
   <style>
     :root {
       color-scheme: light dark;
       --bg: #0a0a0a;
       --text: #fafafa;
       --caption: #cfcfcf;
-      --max-width: 90vw;
-      --max-height: 85vh;
+      --cols: 3;
+      --rows: 2;
+      --gap: 8px;              /* slightly spaced for even visual rhythm */
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
       height: 100%;
+      width: 100%;
       background: var(--bg);
       color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      text-align: center;
+      overflow: hidden;
+      cursor: default;
     }
 
+    /* === FULLSCREEN GRID === */
     main {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
+      height: 100vh;
+      width: 100vw;
+      display: grid;
+      grid-template-columns: repeat(var(--cols), 1fr);
+      grid-template-rows: repeat(var(--rows), 1fr);
+      gap: var(--gap);
       opacity: 0;
       transition: opacity 0.8s ease;
     }
+    body.entered main { opacity: 1; }
 
-    body.entered main {
-      opacity: 1;
-    }
-
-    .frame {
-      position: relative;
-      display: inline-block;
-      max-width: var(--max-width);
-      max-height: var(--max-height);
-    }
-
-    .photo {
-      position: relative;
-      display: inline-block;
-    }
-
-    .photo img {
+    .tile {
       width: 100%;
-      height: auto;
-      border-radius: 16px;
-      max-width: 800px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-      object-fit: contain;
-      display: block;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg);
     }
 
-    /* Removed accent borders (previously ::before and ::after) */
+    /* Keep full image, no cropping */
+    .tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;     /* preserves full image, no edges cropped */
+      display: block;
+      background: var(--bg);
+    }
 
     .cap {
-      margin-top: 14px;
-      font-size: 0.9rem;
+      position: fixed;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
       color: var(--caption);
-      letter-spacing: .3px;
+      font-size: 0.9rem;
+      letter-spacing: 0.3px;
+      opacity: 0.85;
+      pointer-events: none;
+      user-select: none;
     }
 
-    /* Enter screen */
+    /* === ENTER SCREEN === */
     #enter-screen {
       position: fixed;
       inset: 0;
@@ -87,79 +80,139 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 999;
+      z-index: 9999;
       transition: opacity 0.8s ease;
-      cursor: pointer;
     }
-
     #enter-screen.hidden {
       opacity: 0;
       pointer-events: none;
     }
 
-    #enter-text {
-      font-size: 2rem;
-      letter-spacing: 3px;
-      animation: float 2s ease-in-out infinite alternate;
-      color: var(--text);
+    #enter-logo {
+      width: min(320px, 70vw);
+      height: auto;
+      user-select: none;
+      pointer-events: auto;
+      display: block;
+      filter: drop-shadow(0 0 0px white) drop-shadow(0 0 0px rgba(255,255,255,0.5));
     }
 
-    @keyframes float {
-      from { transform: translateY(-6px); }
-      to { transform: translateY(6px); }
+    /* === Zoom-blur effect === */
+    #enter-logo.zoom-blur {
+      animation: zoomBlur 0.8s cubic-bezier(.2,.7,.2,1) forwards;
+      will-change: transform, filter, opacity;
+    }
+
+    @keyframes zoomBlur {
+      0%   { transform: scale(1); filter: blur(0px); opacity: 1; }
+      100% { transform: scale(12); filter: blur(30px); opacity: 0; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .photo { transform: none; }
-      #enter-text { animation: none; }
-    }
-
-    @media (max-width: 768px) {
-      .photo img {
-        max-width: 90vw;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .photo img {
-        max-width: 95vw;
-        border-radius: 10px;
-      }
-      .cap {
-        font-size: 0.8rem;
-      }
+      #enter-logo.zoom-blur { animation: none; }
     }
   </style>
 </head>
 <body>
-  <!-- Simple Enter screen -->
-  <div id="enter-screen">
-    <div id="enter-text">Enter</div>
+  <!-- === ENTER SCREEN === -->
+  <div id="enter-screen" aria-label="Enter site">
+    <!-- Use a web-served path for the logo; local C: paths won’t load in browsers -->
+    <img id="enter-logo" src="C:\Users\chanc\Downloads\web\CONFLICKTWORLD\2620054_9c55d-166791056.gif" alt="Enter Logo">
   </div>
 
-  <main>
-    <div class="frame">
-      <figure class="photo">
-        <img src="images/img1.jpg" alt="Describe the scene for accessibility." loading="eager" decoding="async">
-      </figure>
-    </div>
-    <div class="cap">© <span id="y"></span> CONFLICKTWORLD</div>
+  <!-- === MAIN GRID === -->
+  <main id="grid">
+    <div class="tile"><img src="images/img1.jpg" alt="Image 1"></div>
+    <div class="tile"><img src="images/img1.jpg" alt="Image 2"></div>
+    <div class="tile"><img src="images/img1.jpg" alt="Image 3"></div>
+    <div class="tile"><img src="images/img1.jpg" alt="Image 4"></div>
+    
+    
   </main>
+
+  <div class="cap">© <span id="y"></span> CONFLICKTWORLD</div>
 
   <script>
     document.getElementById('y').textContent = new Date().getFullYear();
 
     const enterScreen = document.getElementById('enter-screen');
+    const logo = document.getElementById('enter-logo');
+    const grid = document.getElementById('grid');
 
-    function enterSite() {
-      enterScreen.classList.add('hidden');
-      document.body.classList.add('entered');
-      setTimeout(() => enterScreen.remove(), 900);
+    function startZoomBlurThenEnter() {
+      if (enterScreen.classList.contains('animating')) return;
+      enterScreen.classList.add('animating');
+      logo.classList.add('zoom-blur');
+      logo.addEventListener('animationend', finishEnter, { once: true });
     }
 
-    enterScreen.addEventListener('click', enterSite);
+    function finishEnter() {
+      enterScreen.classList.add('hidden');
+      document.body.classList.add('entered');
+      setTimeout(() => enterScreen.remove(), 700);
+      // ensure layout after enter
+      smartAutoLayout();
+    }
+
+    logo.addEventListener('click', e => { e.stopPropagation(); startZoomBlurThenEnter(); });
+    enterScreen.addEventListener('click', startZoomBlurThenEnter);
     window.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') enterSite();
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startZoomBlurThenEnter(); }
+    });
+
+    // === SMART AUTO GRID LAYOUT (no cropping, evenly spaced) ===
+    function pickBestGrid(n, viewportRatio, imageRatio) {
+      // Try all column counts to find rows/cols that make the overall grid
+      // aspect ratio close to the viewport, minimizing empty tiles.
+      let best = { cols: 1, rows: n, score: Infinity };
+      for (let cols = 1; cols <= n; cols++) {
+        const rows = Math.ceil(n / cols);
+        const gridRatio = (cols / rows) * imageRatio;
+        const diff = Math.abs(viewportRatio - gridRatio);
+        const empty = cols * rows - n;
+        const score = diff + empty * 0.01; // tiny penalty for unused cells
+        if (score < best.score) best = { cols, rows, score };
+      }
+      return best;
+    }
+
+    async function getFirstImageAspect() {
+      const firstImg = grid.querySelector('img');
+      if (!firstImg) return 1; // fallback square
+      // Wait for load if needed
+      if (!firstImg.complete || firstImg.naturalWidth === 0) {
+        await new Promise(res => {
+          firstImg.addEventListener('load', res, { once: true });
+          firstImg.addEventListener('error', res, { once: true });
+        });
+      }
+      const w = firstImg.naturalWidth || 1;
+      const h = firstImg.naturalHeight || 1;
+      return w / h;
+    }
+
+    async function smartAutoLayout() {
+      const imgs = grid.children.length;
+      if (!imgs) return;
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const viewportRatio = vw / vh;
+
+      // Assume images share roughly the same aspect; sample the first.
+      const imageRatio = await getFirstImageAspect();
+
+      const { cols, rows } = pickBestGrid(imgs, viewportRatio, imageRatio);
+      document.documentElement.style.setProperty('--cols', cols);
+      document.documentElement.style.setProperty('--rows', rows);
+    }
+
+    window.addEventListener('resize', smartAutoLayout);
+    window.addEventListener('load', smartAutoLayout);
+
+    // === CURSOR TRAIL (kept minimal; removed anim to respect reduced motion) ===
+    enterScreen.addEventListener('mousemove', e => {
+      // (Trail removed for clarity/weight; re-add if you still want it)
     });
   </script>
 </body>
